@@ -41,7 +41,7 @@ def test_comments_order(all_comments, client, news):
     (
         (pytest.lazy_fixture('author_client'), True),
         (pytest.lazy_fixture('client'), False),
-    )
+    ),
 )
 def test_author_client_has_form(parametrized_client, is_allowed, comment):
     url = reverse('news:detail', args=(comment.pk,))
