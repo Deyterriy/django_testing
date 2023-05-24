@@ -3,6 +3,8 @@ import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
+pytestmark = pytest.mark.django_db
+
 
 @pytest.mark.parametrize(
     'name, args',
@@ -14,7 +16,6 @@ from pytest_django.asserts import assertRedirects
         ('users:signup', None),
     ),
 )
-@pytest.mark.django_db
 def test_pages_availability_for_anonymous_user(client, name, args):
     url = reverse(name, args=args)
     response = client.get(url)
@@ -28,7 +29,6 @@ def test_pages_availability_for_anonymous_user(client, name, args):
         'news:delete',
     ),
 )
-@pytest.mark.django_db
 def test_edit_delete_availability_for_author(author_client, name, comment):
     url = reverse(name, args=(comment.pk,))
     response = author_client.get(url)
@@ -61,7 +61,6 @@ def test_pages_availability_for_different_users(
         ('news:delete', pytest.lazy_fixture('pk_for_args')),
     ),
 )
-@pytest.mark.django_db
 def test_redirects(client, name, args):
     login_url = reverse('users:login')
     url = reverse(name, args=[args])

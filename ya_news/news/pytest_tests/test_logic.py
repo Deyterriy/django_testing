@@ -8,33 +8,37 @@ from news.forms import BAD_WORDS, WARNING
 
 from news.models import Comment
 
+from random import choice
 
-@pytest.mark.django_db
+pytestmark = pytest.mark.django_db
+
+
 def test_user_can_create_comment(author_client, author, form_data, news):
     url = reverse('news:detail', args=[news.id])
     response = author_client.post(url, data=form_data)
     assertRedirects(response, f'{url}#comments')
-    comments_count = Comment.objects.count()
+    comments_count = 0
+    comments_count += Comment.objects.count()
     assert comments_count == 1
     new_comment = Comment.objects.get()
     assert new_comment.text == form_data['text']
     assert new_comment.author == author
 
 
-@pytest.mark.django_db
 def test_anon_cant_create_comment(client, form_data, news):
     url = reverse('news:detail', args=[news.id])
     response = client.post(url, data=form_data)
     login_url = reverse('users:login')
     expected_url = f'{login_url}?next={url}'
     assertRedirects(response, expected_url)
-    assert Comment.objects.count() == 0
+    comment_count = 0
+    comment_count += Comment.objects.count()
+    assert comment_count == 0
 
 
-@pytest.mark.django_db
 def test_bad_word_warning(author_client, comment, form_data, news):
     url = reverse('news:detail', args=[news.id])
-    form_data['text'] = f'Какой-то текст, {BAD_WORDS[0]}, еще текст'
+    form_data['text'] = f'Какой-то текст, {choice(BAD_WORDS)}, еще текст'
     response = author_client.post(url, data=form_data)
     assertFormError(
         response,
@@ -45,7 +49,6 @@ def test_bad_word_warning(author_client, comment, form_data, news):
     assert Comment.objects.count() == 1
 
 
-@pytest.mark.django_db
 def test_author_can_edit_comment(author_client, form_data, comment, news):
     url = reverse('news:edit', args=(comment.pk,))
     detail_url = reverse('news:detail', args=[news.id])
@@ -55,7 +58,6 @@ def test_author_can_edit_comment(author_client, form_data, comment, news):
     assert comment.text == form_data['text']
 
 
-@pytest.mark.django_db
 def test_other_user_cant_edit_comment(admin_client, form_data, comment):
     url = reverse('news:edit', args=(comment.pk,))
     response = admin_client.post(url, form_data)
@@ -64,7 +66,6 @@ def test_other_user_cant_edit_comment(admin_client, form_data, comment):
     assert comment.text == comment_from_db.text
 
 
-@pytest.mark.django_db
 def test_author_can_delete_comment(author_client, pk_for_args, news):
     url = reverse('news:delete', args=[pk_for_args])
     detail_url = reverse('news:detail', args=[news.id])
@@ -73,7 +74,6 @@ def test_author_can_delete_comment(author_client, pk_for_args, news):
     assert Comment.objects.count() == 0
 
 
-@pytest.mark.django_db
 def test_other_user_cant_delete_comment(admin_client, form_data, pk_for_args):
     url = reverse('news:delete', args=[pk_for_args])
     response = admin_client.post(url)

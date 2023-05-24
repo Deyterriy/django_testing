@@ -15,6 +15,7 @@ User = get_user_model()
 class TestNotesCreation(TestCase):
     SLUG_TEXT = 'SlagoviySlug'
     NOTE_TEXT = 'Текстовый текст'
+    TITLE_TEXT = 'Заголовок'
 
     @classmethod
     def setUpTestData(cls):
@@ -24,7 +25,7 @@ class TestNotesCreation(TestCase):
         cls.url = reverse('notes:add')
         cls.url_done = reverse('notes:success')
         cls.form_data = {
-            'title': 'Заголовок',
+            'title': cls.TITLE_TEXT,
             'text': cls.NOTE_TEXT,
             'slug': cls.SLUG_TEXT,
         }
@@ -43,6 +44,7 @@ class TestNotesCreation(TestCase):
         self.assertEqual(note.text, self.NOTE_TEXT)
         self.assertEqual(note.slug, self.SLUG_TEXT)
         self.assertEqual(note.author, self.author)
+        self.assertEqual(note.title, self.TITLE_TEXT)
 
     def test_slug_transit(self):
         no_slug_data = {
@@ -131,6 +133,7 @@ class TestNoteEditDelete(TestCase):
         self.note.refresh_from_db()
         self.assertEqual(self.note.title, self.NEW_TITLE)
         self.assertEqual(self.note.text, self.NEW_TEXT)
+        self.assertEqual(self.note.author, self.author)
 
     def test_user_cant_edit_note_of_another_user(self):
         response = self.auth2_client.post(
@@ -140,3 +143,4 @@ class TestNoteEditDelete(TestCase):
         self.note.refresh_from_db()
         self.assertEqual(self.note.title, self.TITLE)
         self.assertEqual(self.note.text, self.TEXT)
+        self.assertEqual(self.note.author, self.author)
